@@ -10,3 +10,4 @@ env
 .coverage
 .vscode
 .venv
+.venv3.11

@@ -9,7 +9,11 @@ try:
     import numpy
     include_dirs = [numpy.get_include()]
 except ImportError:
-    include_dirs = []
+    raise ImportError(
+        "No NumPy detected. You should do: \n" \
+        "        pip install numpy \n " \
+        "to install a numpy lib at first. If the same problem happened again, check for setup.py in line 10 to change "
+        "the include dir of numpy manually.")
 
 if sys.platform != 'win32':
     compile_args = ['-funroll-loops']

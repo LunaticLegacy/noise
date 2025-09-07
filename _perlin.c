@@ -254,8 +254,7 @@ py_noise3(PyObject *self, PyObject *args, PyObject *kwargs)
  *     min_x: float, min_y: float,
  *     max_x: float, max_y: float,
  * 	   repeat_x: float, repeat_y: float,
- *     base: float, resolution: float,
- *     callback: Optional[Callable] = None
+ *     base: float, resolution: float
  * ) -> np.ndarray[np.float32]
  * 
  * Yet, this is a single-thread calculating function. 
@@ -270,46 +269,43 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
 	float repeat_x = 1024.0f, repeat_y = 1024.0f;
 	float base = 0.0f;
 	float resolution = 30.0f;  // 30 units.
-	PyObject* callback = NULL;
     
     static char* kwlist[] = {
         "min_x", "min_y",
         "max_x", "max_y",
 		"repeat_x", "repeat_y",
 		"base", "resolution", 
-		"callback",
 		NULL
     };
     
     // Parse parameter.
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffffO:batch_noise2", kwlist,
-        &min_x, &min_y, &max_x, &max_y, &repeat_x, &repeat_y, &base, &resolution, &callback)) {
-        return NULL;
-    }
-
-	// Check for that callback function.
-	if (callback && callback != Py_None && !PyCallable_Check(callback)) {
-        PyErr_SetString(PyExc_TypeError, "callback must be callable or None");
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffff:batch_noise2", kwlist,
+        &min_x, &min_y, &max_x, &max_y, &repeat_x, &repeat_y, &base, &resolution)) {
         return NULL;
     }
 
     // Calculate grid dimensions
-    int width = (int)((max_x - min_x) / resolution);
-    int height = (int)((max_y - min_y) / resolution);
+    int width = (int)((max_x - min_x) / resolution) + 1;
+    int height = (int)((max_y - min_y) / resolution) + 1;
     
     if (width <= 0 || height <= 0) {
         PyErr_SetString(PyExc_ValueError, "Invalid grid dimensions. I meant, min should be smaller than max.");
         return NULL;
     }
 
+	PySys_WriteStdout("Size: (%d, %d)\n", width, height);
+
 	// Create a numpy ndarray.
 	npy_intp dims[2] = {height, width};
     PyArrayObject* result_array = (PyArrayObject*)PyArray_SimpleNew(2, dims, NPY_FLOAT32);
-    if (!result_array) return NULL;
+    if (!result_array) {
+		PySys_WriteStdout("WARNING: No array created.\n");
+		return NULL;
+	}
     float* data = (float*)PyArray_DATA(result_array);
 
-    float step_x = resolution;
-    float step_y = resolution;
+    float step_x = width / resolution;
+    float step_y = height / resolution;
 
 	// Iter.
 	for (int j = 0; j < height; j++) {
@@ -318,28 +314,6 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
             float y = min_y + j * step_y;
             float val = noise2(x, y, repeat_x, repeat_y, base);
             data[j * width + i] = val;
-        }
-
-		// Callback for each iter.
-        if (callback && callback != Py_None) {
-			// Same as this in python:
-			// >>> progress: float = (j + 1) / height
-			// >>> callback(progress)
-            double progress = (double)(j + 1) / (double)height;
-            PyObject* arg = Py_BuildValue("d", progress);
-            if (!arg) {
-				PyErr_Print();
-                Py_DECREF(result_array);
-                return NULL;
-            }
-            PyObject* res = PyObject_CallObject(callback, arg);
-            Py_DECREF(arg);
-            if (!res) {
-				PyErr_Print();
-                Py_DECREF(result_array);
-                return NULL;
-            }
-            Py_DECREF(res);
         }
     }
 
@@ -374,15 +348,17 @@ static PyMethodDef perlin_functions[] = {
 		"batch_noise2(\n"
 		"min_x: float, min_y: float, max_x: float, max_y: float, "
 		"repeat_x: float = 1024.0, repeat_y: float = 1024.0, base: float = 0.0, \n"
-		"resolution: float = 30.0, callback: Optional[Callable] = None\n"
+		"resolution: float = 30.0\n"
 		")\n\n"
 		"Generate a 2D array of Perlin noise values.\n\n"
 		"min_x, min_y -- minimum coordinate values.\n"
 		"max_x, max_y -- maximum coordinate values.\n"
 		"repeat_x, repeat_y, base -- (see noise3 for more info)\n"
 		"resolution -- number of samples per unit.\n"
-		"callback -- Optional. A callback function waiting for a float.\n"
-		"for acquiring the progress of noise generating."
+		"for acquiring the progress of noise generating.\n\n"
+		"Written via: 月と猫 - LunaNeko.\n"
+		"(I just want to generate this in C iteration rather than Python iteration \n"
+		"for the iteration in Python is too slow for me.)"
 	},
 	{NULL}
 };
@@ -406,6 +382,7 @@ static struct PyModuleDef moduledef = {
 PyObject *
 PyInit__perlin(void)
 {
+	import_array();
     return PyModule_Create(&moduledef);
 }
 
