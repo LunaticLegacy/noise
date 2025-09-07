@@ -264,7 +264,7 @@ def batch_pnoise3(
         callback: Optional callback function for acquiring the progress of noise generating.
 
     Returns:
-        2D numpy array of Perlin noise values.
+        3D numpy array of Perlin noise values.
     """
     return _perlin.batch_noise3(
         min_x, min_y, min_z,
