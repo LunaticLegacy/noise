@@ -364,14 +364,14 @@ static PyObject* py_batch_noise3(PyObject* self, PyObject* args, PyObject* kwarg
     static char* kwlist[] = {
         "min_x", "min_y", "min_z",
         "max_x", "max_y", "max_z",
-		"repeat_x", "repeat_y",
+		"repeat_x", "repeat_y", "repeat_z",
 		"base", "resolution", 
 		"callback",
 		NULL
     };
     
     // Parse parameter.
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffffO:batch_noise2", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffffff|fffffO:batch_noise2", kwlist,
         &min_x, &min_y, &min_z,
 		&max_x, &max_y, &max_z,
 		&repeat_x, &repeat_y, &repeat_z,
