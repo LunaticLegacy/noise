@@ -4,6 +4,13 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 
+# Get the include path of numpy.
+try:
+    import numpy
+    include_dirs = [numpy.get_include()]
+except ImportError:
+    include_dirs = []
+
 if sys.platform != 'win32':
     compile_args = ['-funroll-loops']
 else:
@@ -61,9 +68,11 @@ See CHANGES.txt for more details
     ext_modules=[
         Extension('noise._simplex', ['_simplex.c'], 
             extra_compile_args=compile_args,
+            include_dirs=include_dirs,
         ),
         Extension('noise._perlin', ['_perlin.c'],
             extra_compile_args=compile_args,
-        )
+            include_dirs=include_dirs,
+        ),
     ],
 )

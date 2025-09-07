@@ -8,3 +8,5 @@ env
 *.egg
 *.egg-info
 .coverage
+.vscode
+.venv

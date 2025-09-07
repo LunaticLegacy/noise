@@ -7,7 +7,7 @@ fBm capabilities) and Perlin simplex noise. Also contains a fast
 Copyright (c) 2008, Casey Duncan (casey dot duncan at gmail dot com)
 """
 
-__version__ = "1.2.3"
+__version__ = "1.2.3_batch_calc_2"
 
 from . import _perlin, _simplex
 
@@ -17,3 +17,6 @@ snoise4 = _simplex.noise4
 pnoise1 = _perlin.noise1
 pnoise2 = _perlin.noise2
 pnoise3 = _perlin.noise3
+
+# Added my homebrew batch calculating function.
+batch_pnoise2 = _perlin.batch_noise2

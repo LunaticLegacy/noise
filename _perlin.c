@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include "_noise.h"
 
+#include "numpy/arrayobject.h"
+
 #ifdef _MSC_VER
 #define inline __inline
 #endif
@@ -246,6 +248,105 @@ py_noise3(PyObject *self, PyObject *args, PyObject *kwargs)
 	}
 }
 
+/**
+ * Be like:
+ * def batch_noise2(
+ *     min_x: float, min_y: float,
+ *     max_x: float, max_y: float,
+ * 	   repeat_x: float, repeat_y: float,
+ *     base: float, resolution: float,
+ *     callback: Optional[Callable] = None
+ * ) -> np.ndarray[np.float32]
+ * 
+ * Yet, this is a single-thread calculating function. 
+ * Once you want to combine the multiple results via multi threads,
+ *   how to initialize the seamless mosaicking... I'm still thinking.
+ */
+
+static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwargs) {
+
+    // Prepare parameters.
+    float min_x, min_y, max_x, max_y;
+	float repeat_x = 1024.0f, repeat_y = 1024.0f;
+	float base = 0.0f;
+	float resolution = 30.0f;  // 30 units.
+	PyObject* callback = NULL;
+    
+    static char* kwlist[] = {
+        "min_x", "min_y",
+        "max_x", "max_y",
+		"repeat_x", "repeat_y",
+		"base", "resolution", 
+		"callback",
+		NULL
+    };
+    
+    // Parse parameter.
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffffO:batch_noise2", kwlist,
+        &min_x, &min_y, &max_x, &max_y, &repeat_x, &repeat_y, &base, &resolution, &callback)) {
+        return NULL;
+    }
+
+	// Check for that callback function.
+	if (callback && callback != Py_None && !PyCallable_Check(callback)) {
+        PyErr_SetString(PyExc_TypeError, "callback must be callable or None");
+        return NULL;
+    }
+
+    // Calculate grid dimensions
+    int width = (int)((max_x - min_x) / resolution);
+    int height = (int)((max_y - min_y) / resolution);
+    
+    if (width <= 0 || height <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Invalid grid dimensions. I meant, min should be smaller than max.");
+        return NULL;
+    }
+
+	// Create a numpy ndarray.
+	npy_intp dims[2] = {height, width};
+    PyArrayObject* result_array = (PyArrayObject*)PyArray_SimpleNew(2, dims, NPY_FLOAT32);
+    if (!result_array) return NULL;
+    float* data = (float*)PyArray_DATA(result_array);
+
+    float step_x = resolution;
+    float step_y = resolution;
+
+	// Iter.
+	for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+            float x = min_x + i * step_x;
+            float y = min_y + j * step_y;
+            float val = noise2(x, y, repeat_x, repeat_y, base);
+            data[j * width + i] = val;
+        }
+
+		// Callback for each iter.
+        if (callback && callback != Py_None) {
+			// Same as this in python:
+			// >>> progress: float = (j + 1) / height
+			// >>> callback(progress)
+            double progress = (double)(j + 1) / (double)height;
+            PyObject* arg = Py_BuildValue("d", progress);
+            if (!arg) {
+				PyErr_Print();
+                Py_DECREF(result_array);
+                return NULL;
+            }
+            PyObject* res = PyObject_CallObject(callback, arg);
+            Py_DECREF(arg);
+            if (!res) {
+				PyErr_Print();
+                Py_DECREF(result_array);
+                return NULL;
+            }
+            Py_DECREF(res);
+        }
+    }
+
+    return (PyObject*)result_array;
+}
+
+
 static PyMethodDef perlin_functions[] = {
 	{"noise1", (PyCFunction) py_noise1, METH_VARARGS | METH_KEYWORDS, 
 		"noise1(x, octaves=1, persistence=0.5, lacunarity=2.0, repeat=1024, base=0.0)\n\n"
@@ -269,6 +370,20 @@ static PyMethodDef perlin_functions[] = {
 		"tileable textures\n\n"
 		"base -- specifies a fixed offset for the input coordinates. Useful for\n"
 		"generating different noise textures with the same repeat interval"},
+	{"batch_noise2", (PyCFunction)py_batch_noise2, METH_VARARGS | METH_KEYWORDS, 
+		"batch_noise2(\n"
+		"min_x: float, min_y: float, max_x: float, max_y: float, "
+		"repeat_x: float = 1024.0, repeat_y: float = 1024.0, base: float = 0.0, \n"
+		"resolution: float = 30.0, callback: Optional[Callable] = None\n"
+		")\n\n"
+		"Generate a 2D array of Perlin noise values.\n\n"
+		"min_x, min_y -- minimum coordinate values.\n"
+		"max_x, max_y -- maximum coordinate values.\n"
+		"repeat_x, repeat_y, base -- (see noise3 for more info)\n"
+		"resolution -- number of samples per unit.\n"
+		"callback -- Optional. A callback function waiting for a float.\n"
+		"for acquiring the progress of noise generating."
+	},
 	{NULL}
 };
 
