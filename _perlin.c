@@ -289,6 +289,12 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
         return NULL;
     }
 
+	// Validate the callback function.
+    if (callback && callback != Py_None && !PyCallable_Check(callback)) {
+        PyErr_SetString(PyExc_TypeError, "callback must be callable or None");
+        return NULL;
+    }
+
     // Calculate grid dimensions
     int width = (int)((max_x - min_x) / resolution) + 1;
     int height = (int)((max_y - min_y) / resolution) + 1;
@@ -297,8 +303,6 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
         PyErr_SetString(PyExc_ValueError, "Invalid grid dimensions. I meant, min should be smaller than max.");
         return NULL;
     }
-
-	PySys_WriteStdout("Size: (%d, %d)\n", width, height);
 
 	// Create a numpy ndarray.
 	npy_intp dims[2] = {height, width};
@@ -323,6 +327,26 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
             float y = min_y + j * step_y;
             float val = noise2(x, y, repeat_x, repeat_y, base);
             data[j * width + i] = val;
+        }
+
+		// Callback, once per row.
+		if (callback && callback != Py_None) {
+            double progress = (double)(j + 1) / (double)height;  // in range [0, 1]
+            PyObject* arg = Py_BuildValue("(d)", progress);      // tuple with one float
+			if (!arg) {
+                Py_DECREF(result_array);
+				PySys_WriteStderr("Error in building callback arg.\n");
+                return NULL;
+            }
+            PyObject* res = PyObject_CallObject(callback, arg);
+            Py_DECREF(arg);
+
+            if (!res) {  // exception occurred in Python
+                Py_DECREF(result_array);
+				PySys_WriteStderr("Error in calling callback func.\n");
+                return NULL;
+            }
+            Py_DECREF(res);
         }
     }
 
