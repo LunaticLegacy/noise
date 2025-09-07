@@ -254,7 +254,8 @@ py_noise3(PyObject *self, PyObject *args, PyObject *kwargs)
  *     min_x: float, min_y: float,
  *     max_x: float, max_y: float,
  * 	   repeat_x: float, repeat_y: float,
- *     base: float, resolution: float
+ *     base: float, resolution: float,
+ *     callback: Optional[Callable] = None
  * ) -> np.ndarray[np.float32]
  * 
  * Yet, this is a single-thread calculating function. 
@@ -269,18 +270,22 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
 	float repeat_x = 1024.0f, repeat_y = 1024.0f;
 	float base = 0.0f;
 	float resolution = 30.0f;  // 30 units.
+	PyObject* callback = NULL;
     
     static char* kwlist[] = {
         "min_x", "min_y",
         "max_x", "max_y",
 		"repeat_x", "repeat_y",
 		"base", "resolution", 
+		"callback",
 		NULL
     };
     
     // Parse parameter.
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffff:batch_noise2", kwlist,
-        &min_x, &min_y, &max_x, &max_y, &repeat_x, &repeat_y, &base, &resolution)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "ffff|ffffO:batch_noise2", kwlist,
+        &min_x, &min_y, &max_x, &max_y, &repeat_x, &repeat_y, &base, &resolution,
+		&callback)
+	) {
         return NULL;
     }
 
@@ -306,6 +311,10 @@ static PyObject* py_batch_noise2(PyObject* self, PyObject* args, PyObject* kwarg
 
     float step_x = width / resolution;
     float step_y = height / resolution;
+
+	// progress bar for now.
+	float total = step_x * step_y;
+	float now = 0.0f;
 
 	// Iter.
 	for (int j = 0; j < height; j++) {
