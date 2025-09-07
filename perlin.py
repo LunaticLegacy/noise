@@ -1,4 +1,4 @@
-# Copyright (c) 2008, Casey Duncan (casey dot duncan at gmail dot com)
+# Copyright (c) 2008, Casey Duncan (casey.duncan@gmail.com)
 # see LICENSE.txt for details
 
 """Perlin noise -- pure python implementation"""

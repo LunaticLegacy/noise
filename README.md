@@ -1,6 +1,12 @@
+The following message is via `月と猫 - LunaNeko`:
+
+## NOISE
+
+- This is a TOTAL REMASTER version of the original library written in 2008 via `Casey Duncan` <casey.duncan@gmail.com>.
+
 Native-code and shader implementations of Perlin noise for Python
 
-By Casey Duncan <casey.duncan@gmail.com>
+By Casey Duncan 
 
 This package is designed to give you simple to use, fast functions for
 generating Perlin noise in your Python programs. Perlin noise is famously
@@ -56,7 +62,4 @@ to my email above.
 
 Blue planet texture used for atmosphere example courtesy NASA
 
---------
 
-The following message is via `月と猫 - LunaNeko`:
-- I added a new function for this library for batch generating the noise.

@@ -23,8 +23,8 @@ else:
 
 setup(
     name='noise',
-    version='1.2.3',
-    description='Perlin noise for Python',
+    version='2.0',
+    description='Perlin noise for Python (Remastered version)',
     long_description='''\
 Perlin noise is ubiquitous in modern CGI. Used for procedural texturing,
 animation, and enhancing realism, Perlin noise has been called the "salt" of
@@ -40,6 +40,8 @@ noise functions themselves do not, however.
 The Perlin improved noise functions can also generate fBm (fractal Brownian
 motion) noise by combining multiple octaves of Perlin noise. Shader functions
 for convenient generation of turbulent noise are also included.
+
+- 2.0   Remastered the whole library.
 
 - 1.2.3 Fixed linker bug (Gentoo), lacunarity param for snoise4
 
