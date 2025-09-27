@@ -9,5 +9,4 @@ env
 *.egg-info
 .coverage
 .vscode
-.venv
-.venv3.11
+.venv*

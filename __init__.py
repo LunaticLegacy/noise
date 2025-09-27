@@ -274,3 +274,79 @@ def batch_pnoise3(
         resolution,
         callback
     )
+
+def batch_snoise2(
+        min_x: float, min_y: float,
+        max_x: float, max_y: float,
+        repeat_x: Optional[float] = None, repeat_y: Optional[float] = None,
+        base: float = 0.0,
+        resolution: float = 30.0,
+        callback: Optional[Callable] = None
+    ) -> NDArray[np.float32]: 
+    """Generate a 2D array of Simplex noise values.
+
+    Args:
+        min_x: Minimum X coordinate value.
+        min_y: Minimum Y coordinate value.
+        max_x: Maximum X coordinate value.
+        max_y: Maximum Y coordinate value.
+        repeat_x: Specifies the interval along x axis when the noise values repeat.
+            This can be used as the tile size for creating tileable textures.
+        repeat_y: Specifies the interval along y axis when the noise values repeat.
+            This can be used as the tile size for creating tileable textures.
+        base: Specifies a fixed offset for the input coordinates. Useful for
+            generating different noise textures with the same repeat interval.
+        resolution: Number of samples per unit.
+        callback: Optional callback function for acquiring the progress of noise generating.
+
+    Returns:
+        2D numpy array of Simplex noise values.
+    """
+    return _simplex.batch_noise2(
+        min_x, min_y,
+        max_x, max_y,
+        repeat_x, repeat_y,
+        base,
+        resolution,
+        callback
+    )
+
+def batch_snoise3(
+        min_x: float, min_y: float, min_z: float,
+        max_x: float, max_y: float, max_z: float,
+        repeat_x: float = 1024.0, repeat_y: float = 1024.0, repeat_z: float = 1024.0,
+        base: float = 0.0,
+        resolution: float = 30.0,
+        callback: Optional[Callable] = None
+    ) -> NDArray[np.float32]: 
+    """Generate a 3D array of Simplex noise values.
+
+    Args:
+        min_x: Minimum X coordinate value.
+        min_y: Minimum Y coordinate value.
+        min_z: Minimum Z coordinate value.
+        max_x: Maximum X coordinate value.
+        max_y: Maximum Y coordinate value.
+        max_z: Maximum Z coordinate value.
+        repeat_x: Specifies the interval along x axis when the noise values repeat.
+            This can be used as the tile size for creating tileable textures.
+        repeat_y: Specifies the interval along y axis when the noise values repeat.
+            This can be used as the tile size for creating tileable textures.
+        repeat_z: Specifies the interval along z axis when the noise values repeat.
+            This can be used as the tile size for creating tileable textures.
+        base: Specifies a fixed offset for the input coordinates. Useful for
+            generating different noise textures with the same repeat interval.
+        resolution: Number of samples per unit.
+        callback: Optional callback function for acquiring the progress of noise generating.
+
+    Returns:
+        3D numpy array of Simplex noise values.
+    """
+    return _simplex.batch_noise3(
+        min_x, min_y, min_z,
+        max_x, max_y, max_z,
+        repeat_x, repeat_y, repeat_z,
+        base,
+        resolution,
+        callback
+    )

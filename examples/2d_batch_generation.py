@@ -14,7 +14,7 @@ def fetch_progress(arg: float) -> float:
     return arg
 
 def worker():
-    noise.batch_pnoise3(
+    noise.batch_snoise3(
         0.0, 0.0, 0.0,
         1000.0, 1000.0, 1000.0,
         1024.0, 1024.0, 1024.0,
