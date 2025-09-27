@@ -4,6 +4,8 @@ The following message is via `月と猫 - LunaNeko`:
 
 - This is a TOTAL REMASTER version of the original library written in 2008 via `Casey Duncan` <casey.duncan@gmail.com>.
 
+## Original Readme.txt:
+
 Native-code and shader implementations of Perlin noise for Python
 
 By Casey Duncan 

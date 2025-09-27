@@ -1,3 +1,10 @@
+2.0 -- September 27, 2025
+
+  - Renewed the library after 7 years when the original author abandoned this project.
+  - Added typing annotation
+  - Added batch calculation (will be output as np.ndarray)
+  (Thanks to: 月と猫 - LunaNeko)
+
 1.2.3 -- November 12, 2018
 
   - Fix linking issue with inline functions on some platforms (e.g., Gentoo)
